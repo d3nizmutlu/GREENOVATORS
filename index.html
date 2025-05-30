@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GREENOVATORS yapay fotosentez simülasyonu</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #e8f5e9;
+    margin: 0;
+    padding: 20px;
+    color: #2e7d32;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  h1 {
+    text-align: center;
+  }
+  #harita {
+    width: 100%;
+    max-width: 800px;
+    height: 400px;
+    margin: 20px auto;
+    background: url('https://upload.wikimedia.org/wikipedia/commons/5/56/İzmir_districts.png') no-repeat center;
+    background-size: contain;
+    border: 2px solid #a5d6a7;
+    position: relative;
+  }
+  .modul {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #81c784aa;
+    border-radius: 50%;
+    border: 2px solid #388e3c;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+  }
+  #panel {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #c8e6c9;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.2em;
+    transition: background-color 0.3s;
+  }
+
+  #temaButonu {
+    display: block;
+    margin: 10px auto 20px;
+    padding: 10px 20px;
+    background-color: #388e3c;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s;
+  }
+
+  /* 🌙 Dark Theme */
+  body.dark {
+    background-color: #1b1f1d;
+    color: #a5d6a7;
+  }
+  body.dark #harita {
+    border: 2px solid #4caf50;
+  }
+  body.dark .modul {
+    background-color: #66bb6aee;
+    border: 2px solid #2e7d32;
+  }
+  body.dark #panel {
+    background-color: #2e7d32;
+    color: #ffffff;
+  }
+  body.dark #temaButonu {
+    background-color: #66bb6a;
+    color: #1b1f1d;
+  }
+</style>
+</head>
+<body>
+
+<h1>GREENOVATORS yapay fotosentez simülasyonu - İZMİR HARİTASI</h1>
+
+<button id="temaButonu">🌙 karanlık mod</button>
+
+<div id="harita"></div>
+
+<div id="panel">
+  <p>Modül sayısı: <span id="modulSayisi">0</span></p>
+  <p>Toplam CO₂ Emilimi: <span id="co2">0</span> kg/gün</p>
+  <p>Toplam Enerji Üretimi: <span id="enerji">0</span> kWh/gün</p>
+</div>
+
+<script>
+  const harita = document.getElementById('harita');
+  const modulSayisiSpan = document.getElementById('modulSayisi');
+  const co2Span = document.getElementById('co2');
+  const enerjiSpan = document.getElementById('enerji');
+  const temaButonu = document.getElementById('temaButonu');
+  let moduller = [];
+
+  const modulCO2 = 10;  // kg/gün
+  const modulEnerji = 5; // kWh/gün
+
+  // Tema kontrolü
+  function temaYukle() {
+    const tema = localStorage.getItem('tema');
+    if (tema === 'dark') {
+      document.body.classList.add('dark');
+      temaButonu.textContent = '☀️ açık mod';
+    }
+  }
+
+  temaButonu.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    const darkMode = document.body.classList.contains('dark');
+    temaButonu.textContent = darkMode ? '☀️ açık mod' : '🌙 karanlık mod';
+    localStorage.setItem('tema', darkMode ? 'dark' : 'light');
+  });
+
+  harita.addEventListener('click', function(e) {
+    const rect = harita.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const modul = document.createElement('div');
+    modul.classList.add('modul');
+    modul.style.left = (x - 20) + 'px';
+    modul.style.top = (y - 20) + 'px';
+    modul.textContent = moduller.length + 1;
+
+    modul.addEventListener('click', function(event) {
+      event.stopPropagation();
+      harita.removeChild(modul);
+      moduller = moduller.filter(m => m !== modul);
+      güncellePanel();
+    });
+
+    harita.appendChild(modul);
+    moduller.push(modul);
+    güncellePanel();
+  });
+
+  function güncellePanel() {
+    modulSayisiSpan.textContent = moduller.length;
+    co2Span.textContent = (moduller.length * modulCO2).toFixed(1);
+    enerjiSpan.textContent = (moduller.length * modulEnerji).toFixed(1);
+  }
+
+  // Sayfa yüklendiğinde temayı uygula
+  temaYukle();
+</script>
+
+</body>
+</html>
